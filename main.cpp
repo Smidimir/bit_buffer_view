@@ -42,7 +42,7 @@ int main(int argc, char** argv)
   auto const n_read_once = 13u;
   auto const size = n_bits / n_read_once;
 
-  auto const remaining_bits = n_bits - size * n_read_once - 1;
+  auto const remaining_bits = n_bits - size * n_read_once;
 
   auto temp = std::array<std::uint8_t, 10>{};
 

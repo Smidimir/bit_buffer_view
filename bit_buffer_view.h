@@ -165,7 +165,6 @@ public:
       }
 
       // TODO: deal with end of buffer edge case
-      // TODO: make like write function
       auto const n_remaining_read_bits = n_read_bits % sn_data_block_bit_size;
       if(n_remaining_read_bits > 0)
       {
