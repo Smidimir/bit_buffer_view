@@ -10,9 +10,9 @@
 int main(int argc, char** argv)
 {
   using data_t = std::uint8_t;
-  using iter_t = std::uint64_t;
+  using iter_t = std::uint16_t;
 
-  std::vector<data_t> in {1, 1, 1, 1, 1, 1, 1};
+  std::vector<data_t> in {255, 255, 255, 255, 255, 255, 255};
   std::vector<data_t> out{0, 0, 0, 0, 0, 0, 0};
 
 
@@ -38,28 +38,20 @@ int main(int argc, char** argv)
 //  std::cout << "---" << std::endl;
 //
 //
-  auto const n_bits = in.size() * 16u;
-  auto const n_read_once = 3u;
+  auto const n_bits = in.size() * sizeof(data_t) * 8u;
+  auto const n_read_once = 10u;
   auto const size = n_bits / n_read_once;
 
   auto temp = std::array<std::uint8_t, 10>{};
-  temp.fill(0);
-
-  it_in.write(out.data(), 1);
-
-  out[0] = 0;
-
-  it_in.write(out.data(), out.size() * sizeof(data_t) * 8u - 1);
-//    it_out.read(in.data(), out.size() * sizeof(data_t) * 8u);
-
-
 
   for(std::size_t i = 0; i < size; ++i)
   {
-
-
-
+    temp.fill(0);
+    it_in.write(temp.data(), n_read_once);
+    it_out.read(temp.data(), n_read_once);
   }
+
+
 
   for(auto const& val : in)
   {

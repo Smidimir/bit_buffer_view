@@ -340,14 +340,14 @@ BIT_BUF_DECLARE_ITERATOR_COMPERISON_OPERTOR(>=, >)
 #undef BIT_BUF_DECLARE_ITERATOR_COMPERISON_OPERTOR
 
 template <typename TDataBlockLhs, typename TDataBlockRhs>
-inline bool operator + ( bit_buffer_view_iterator_t<TDataBlockLhs> const& lhs
+inline auto operator + ( bit_buffer_view_iterator_t<TDataBlockLhs> const& lhs
                        , bit_buffer_view_iterator_t<TDataBlockRhs> const& rhs ) noexcept
 {
   return bit_buffer_view_iterator_t<TDataBlockLhs>{lhs} += rhs;
 }
 
 template <typename TDataBlockLhs, typename TDataBlockRhs>
-inline bool operator - ( bit_buffer_view_iterator_t<TDataBlockLhs> const& lhs
+inline auto operator - ( bit_buffer_view_iterator_t<TDataBlockLhs> const& lhs
                        , bit_buffer_view_iterator_t<TDataBlockRhs> const& rhs ) noexcept
 {
   return bit_buffer_view_iterator_t<TDataBlockLhs>{lhs} -= rhs;
