@@ -12,7 +12,7 @@ int main(int argc, char** argv)
   using data_t = std::uint8_t;
   using iter_t = std::uint16_t;
 
-  std::vector<data_t> in {255, 255, 255, 255, 255, 255, 255};
+  std::vector<data_t> in {89, 28, 33, 165, 72, 255, 255};
   std::vector<data_t> out{0, 0, 0, 0, 0, 0, 0};
 
 
@@ -39,8 +39,10 @@ int main(int argc, char** argv)
 //
 //
   auto const n_bits = in.size() * sizeof(data_t) * 8u;
-  auto const n_read_once = 10u;
+  auto const n_read_once = 13u;
   auto const size = n_bits / n_read_once;
+
+  auto const remaining_bits = n_bits - size * n_read_once - 1;
 
   auto temp = std::array<std::uint8_t, 10>{};
 
@@ -50,6 +52,10 @@ int main(int argc, char** argv)
     it_in.write(temp.data(), n_read_once);
     it_out.read(temp.data(), n_read_once);
   }
+
+  temp.fill(0);
+  it_in.write(temp.data(), remaining_bits);
+  it_out.read(temp.data(), remaining_bits);
 
 
 

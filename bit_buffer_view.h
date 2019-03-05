@@ -147,6 +147,8 @@ public:
     template <typename T>
     data_size_t read(T const* const data, data_size_t n_read_bits) noexcept
     {
+      auto constexpr ones = static_cast<data_block_t>(~0);
+
       auto read_block_it = reinterpret_cast<data_block_t const*>(data);
 
       auto const n_read_blocks = n_read_bits / sn_data_block_bit_size;
@@ -163,23 +165,58 @@ public:
       }
 
       // TODO: deal with end of buffer edge case
+      // TODO: make like write function
       auto const n_remaining_read_bits = n_read_bits % sn_data_block_bit_size;
       if(n_remaining_read_bits > 0)
       {
-        auto const n_data_read_mask = static_cast<data_block_t>(~(~data_block_t(0) << (mn_bit_index + n_remaining_read_bits)));
-        (*mp_block_it) |= static_cast<data_block_t>(static_cast<data_block_t>(*read_block_it << mn_bit_index) & n_data_read_mask);
-
-        mn_bit_index += n_remaining_read_bits;
-
-        if(mn_bit_index >= sn_data_block_bit_size)
+        auto const n_remaining_block_bits = sn_data_block_bit_size - mn_bit_index;
+        if(n_remaining_read_bits <= n_remaining_block_bits)
         {
-          ++mp_block_it;
-          mn_bit_index -= sn_data_block_bit_size;
+          auto const n_shift_size     = static_cast<data_block_t>(n_remaining_block_bits - n_remaining_read_bits);
+          auto const n_data_read_mask = static_cast<data_block_t>(ones >> n_shift_size);
+          auto const n_data_to_read   = static_cast<data_block_t>(*read_block_it << mn_bit_index);
+          *mp_block_it               |= static_cast<data_block_t>(n_data_to_read & n_data_read_mask);
+          mn_bit_index += n_remaining_read_bits;
 
-          auto const n_data_read_mask = static_cast<data_block_t>(~(~data_block_t(0) << (mn_bit_index)));
-          (*mp_block_it) |= static_cast<data_block_t>(static_cast<data_block_t>(*read_block_it >> (n_remaining_read_bits - mn_bit_index)) & n_data_read_mask);
+          if(mn_bit_index == sn_data_block_bit_size)
+          {
+            ++mp_block_it;
+            mn_bit_index = 0;
+          }
+        }
+        else
+        {
+          auto const n_data_to_write_first = static_cast<data_block_t>(*read_block_it << mn_bit_index);
+          *mp_block_it                    |= static_cast<data_block_t>(n_data_to_write_first);
+
+          ++mp_block_it;
+          mn_bit_index                   = static_cast<data_index_t>(n_remaining_read_bits - n_remaining_block_bits);
+
+          auto const n_shift_size        = static_cast<data_block_t>(sn_data_block_bit_size - mn_bit_index);
+          auto const n_data_read_mask    = static_cast<data_block_t>(ones >> n_shift_size);
+          auto const n_data_to_read_last = static_cast<data_block_t>(*read_block_it >> n_remaining_block_bits);
+          *mp_block_it                  |= static_cast<data_block_t>(n_data_to_read_last & n_data_read_mask);
         }
       }
+
+//// last working variant
+//      auto const n_remaining_read_bits = n_read_bits % sn_data_block_bit_size;
+//      if(n_remaining_read_bits > 0)
+//      {
+//        auto const n_data_read_mask = static_cast<data_block_t>(~(~data_block_t(0) << (mn_bit_index + n_remaining_read_bits)));
+//        (*mp_block_it) |= static_cast<data_block_t>(static_cast<data_block_t>(*read_block_it << mn_bit_index) & n_data_read_mask);
+//
+//        mn_bit_index += n_remaining_read_bits;
+//
+//        if(mn_bit_index >= sn_data_block_bit_size)
+//        {
+//          ++mp_block_it;
+//          mn_bit_index -= sn_data_block_bit_size;
+//
+//          auto const n_data_read_mask = static_cast<data_block_t>(~(~data_block_t(0) << (mn_bit_index)));
+//          (*mp_block_it) |= static_cast<data_block_t>(static_cast<data_block_t>(*read_block_it >> (n_remaining_read_bits - mn_bit_index)) & n_data_read_mask);
+//        }
+//      }
 
       // TODO, amount of unreaded bits
       return {};
@@ -252,7 +289,7 @@ public:
 
           auto const n_shift_size         = static_cast<data_block_t>(sn_data_block_bit_size - n_remaining_write_bits);
           auto const n_data_write_mask    = static_cast<data_block_t>(ones >> n_shift_size);
-          auto const n_data_to_write_last = static_cast<data_block_t>(*mp_block_it << mn_bit_index);
+          auto const n_data_to_write_last = static_cast<data_block_t>(*mp_block_it << n_remaining_block_bits);
           *write_block_it                |= static_cast<data_block_t>(n_data_to_write_last & n_data_write_mask);
         }
       }
