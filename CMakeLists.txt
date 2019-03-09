@@ -3,4 +3,4 @@ project(bit_buffer_view)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(bit_buffer_view main.cpp)
+add_executable(bit_buffer_view main.cpp bitbuf_view.cpp)
